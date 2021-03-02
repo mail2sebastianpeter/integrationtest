@@ -1,0 +1,57 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- script: echo Hello, world!
+  displayName: 'Run a one-line script'
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+      IFS=","
+      
+      line1=$(head -n 1 intexcel.csv)
+      rows=$(cat intexcel.csv | wc -l)
+      colums=$(echo $line1 | wc -w)
+      
+      for ((i=1;i<=$colums; i++))
+      do
+      z[$i]="$(cat intexcel.csv | cut -d ',' -f$i)"
+      z[$i]="$(echo ${z[$i]} | tr -d '\r')"
+      y[$i]="${z[$i]//$'\n'/ }"
+      b[$i]="$(echo "${y[$i]}" | cut -d ' ' -f 2-)"
+      done
+      
+      for ((i=1; i<=$colums; i++))
+      do
+      echo ${b[$i]}
+      done
+      
+      IFS=" "
+      
+      
+      
+      
+      
+      git branch
+      ls
+      echo ${b[1]}
+      b="val1set1 val2set1"
+      git config --global user.name Sebastian Peter
+      git config --global user.email mail2sebastianpeter@gmail.com
+      git checkout master
+      git checkout -B branch2
+       git checkout origin/branch1 $b
+       git commit -m "New Commit in Branch2 val1set1" 
+       
+      git push -u origin branch2
+      
+       gh pr create --title "For merging to master" --body "Merge code form branch2 to master" --base master --head branch2
