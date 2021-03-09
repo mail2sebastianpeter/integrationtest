@@ -1,0 +1,55 @@
+IFS=","
+
+line1=$(head -n 1 intexcelhybrid.csv)
+rows=$(cat intexcelhybrid.csv | wc -l)
+colums=$(echo $line1 | wc -w)
+
+for ((i=1;i<=$colums; i++))
+do
+z[$i]="$(cat intexcelhybrid.csv | cut -d ',' -f$i)"
+z[$i]="$(echo ${z[$i]} | tr -d '\r')"
+y[$i]="${z[$i]//$'\n'/';'}"
+y[$i]="${y[$i]//$' '/'\'}"
+y[$i]="${y[$i]//$';'/ }"
+x[$i]="${y[$i]//'\'/'\\ '}"
+#x[$i]="$(echo ${y[$i]} | tr -s '\' '\ ')"
+
+c=$(echo ${y[$i]} | wc -w)
+echo "word count is : $c"
+
+if [ $c -gt 1 ]
+then
+b[$i]="$(echo "${y[$i]}" | cut -d ' ' -f 2-)"
+fi
+x[$i]="${b[$i]//'\'/'\ '}"
+
+done
+
+for ((i=1; i<=$colums; i++))
+do
+echo ${x[$i]}
+#echo "extracting the sets :"
+#a="$(echo "${y[$i]}" | cut -d ' ' -f 1)"
+#echo $a
+done
+
+IFS=' '
+echo "file identification completed now moving to git area"
+git clone "https://github.com/mail2sebastianpeter/integrationtest.git"
+cd integrationtest
+		  git branch
+		  echo ${x[1]}
+for ((i=1; i<=$colums; i++))
+do		  
+		 c=$(echo ${b[$i]} | wc -w)
+echo "word count is : $c"
+if [ $c -gt 0 ]
+then
+		  git checkout master
+          git checkout -B autobranch_$i
+          git checkout origin/branch1 ${x[$i]}
+          git commit -m "Automated commit in autobranch_$i with files ${x[$i]}" 
+          git push -u origin autobranch_$i
+          gh pr create --title "pull request from autobranch_$i to master" --body "Merge code form autobranch_$i to master" --base master --head autobranch_$i
+fi
+done
